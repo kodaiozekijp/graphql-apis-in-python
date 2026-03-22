@@ -1,15 +1,20 @@
-from graphene import ObjectType, List
-from app.gql.types import JobObject, EmployerObject
-from app.db.data import jobs_data, employers_data
+from typing import List
+from app.gql.types import JobType, EmployerType
+from app.db.models import Job, Employer
+from app.db.database import Session
+from sqlalchemy.orm import joinedload
+import strawberry
+from strawberry.types import Info
 
-class Query(ObjectType):
-    jobs = List(JobObject)
-    employers = List(EmployerObject)
+@strawberry.type
+class Query:
+    # jobs = List(JobObject)
+    # employers = List(EmployerObject)
 
-    @staticmethod
-    def resolve_jobs(root, info):
-        return jobs_data
-    
-    @staticmethod
-    def resolve_employers(root, info):
-        return employers_data
+    @strawberry.field
+    def employers(self, info: Info) -> List[EmployerType]:
+        return Session().query(Employer).options(joinedload(Employer.jobs)).all()
+
+    @strawberry.field
+    def jobs(self, info: Info) -> List[JobType]:
+        return Session().query(Job).options(joinedload(Job.employer)).all()
