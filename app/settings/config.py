@@ -1,0 +1,1 @@
+DATABASE_URL = "postgresql://postgres:GUfNfLfdauigADzgACyMYSIwwwgMUpNG@ballast.proxy.rlwy.net:35506/railway"
