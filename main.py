@@ -1,14 +1,21 @@
 from graphene import Field, Int, Schema, ObjectType, String, List
 from fastapi import FastAPI
 from starlette_graphene3 import GraphQLApp, make_graphiql_handler, make_playground_handler
-from sqlalchemy import create_engine, Column, Integer, String as saString
+from sqlalchemy import create_engine, Column, Integer, String as saString, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, sessionmaker
+from dotenv import load_dotenv
 import os
+
+# for local
+load_dotenv()
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 engine = create_engine(DATABASE_URL)
 
 Base = declarative_base()
+
+Session = sessionmaker(bind=engine)
 
 class Employer(Base):
     __tablename__ = "employers"
@@ -17,8 +24,16 @@ class Employer(Base):
     name = Column(saString)
     contact_email = Column(saString)
     industry = Column(saString)
+    jobs = relationship("Job", back_populates="employer")
 
-Base.metadata.create_all(engine)
+class Job(Base):
+    __tablename__ = "jobs"
+
+    id = Column(Integer, primary_key=True)
+    title = Column(saString)
+    description = Column(saString)
+    employer_id = Column(Integer, ForeignKey("employers.id"))
+    employer = relationship("Employer", back_populates="jobs")
 
 # static data
 employers_data = [
@@ -33,6 +48,24 @@ jobs_data = [
     {"id": 3, "title": "Financial Analyst", "description": "Analyze financial data", "employer_id": 3},
     {"id": 4, "title": "Marketing Manager", "description": "Manage marketing campaigns", "employer_id": 1},
 ]
+
+def prepare_database():
+    Base.metadata.drop_all(engine)
+    Base.metadata.create_all(engine)
+
+    session = Session()
+
+    for employer in employers_data:
+    # ** → unpacking the dictionary
+        emp = Employer(**employer)
+        session.add(emp)
+
+    for job in jobs_data:
+        job = Job(**job)
+        session.add(job)
+    
+    session.commit()
+    session.close()
 
 class EmployerObject(ObjectType):
     id = Int()
@@ -71,6 +104,10 @@ class Query(ObjectType):
 schema = Schema(query=Query)
 
 app = FastAPI()
+
+@app.on_event("startup")
+def startup_event():
+    prepare_database()
 
 app.mount("/graphql", GraphQLApp(
     schema=schema,
