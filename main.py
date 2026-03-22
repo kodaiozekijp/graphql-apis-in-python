@@ -1,6 +1,24 @@
 from graphene import Field, Int, Schema, ObjectType, String, List
 from fastapi import FastAPI
 from starlette_graphene3 import GraphQLApp, make_graphiql_handler, make_playground_handler
+from sqlalchemy import create_engine, Column, Integer, String as saString
+from sqlalchemy.ext.declarative import declarative_base
+import os
+
+DATABASE_URL = os.environ.get("DATABASE_URL")
+engine = create_engine(DATABASE_URL)
+
+Base = declarative_base()
+
+class Employer(Base):
+    __tablename__ = "employers"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(saString)
+    contact_email = Column(saString)
+    industry = Column(saString)
+
+Base.metadata.create_all(engine)
 
 # static data
 employers_data = [
