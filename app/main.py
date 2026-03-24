@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from app.gql.mutation import Mutation
 from app.gql.queries import Query
 from app.db.database import prepare_database
 from app.db.models import Employer, Job
@@ -14,7 +15,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-schema = strawberry.Schema(query=Query)
+schema = strawberry.Schema(query=Query, mutation=Mutation)
 graphql_app = GraphQLRouter(schema=schema)
 
 app.include_router(graphql_app, prefix="/graphql")
