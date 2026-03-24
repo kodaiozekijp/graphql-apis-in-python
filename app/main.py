@@ -1,9 +1,8 @@
 from fastapi import FastAPI
 from app.gql.mutation import Mutation
 from app.gql.queries import Query
-from app.db.database import prepare_database
+from app.db.database import prepare_database, Session
 from app.db.models import Employer, Job
-from app.db.database import Session
 import strawberry
 from contextlib import asynccontextmanager
 from strawberry.fastapi import GraphQLRouter
