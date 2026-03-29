@@ -16,7 +16,7 @@ class Mutation:
             return job
 
     @strawberry.mutation
-    def udpate_job(self, job_id: int, title: str = None, description: str = None, employer_id: int = None) -> JobType:
+    def update_job(self, job_id: int, title: str = None, description: str = None, employer_id: int = None) -> JobType:
         with Session() as session:
             job = session.query(Job).filter(Job.id == job_id).first()
             if not job:
