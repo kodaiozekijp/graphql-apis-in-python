@@ -14,3 +14,19 @@ class Mutation:
             session.commit()
             session.refresh(job)
             return job
+
+    @strawberry.mutation
+    def udpate_job(self, job_id: int, title: str = None, description: str = None, employer_id: int = None) -> JobType:
+        with Session() as session:
+            job = session.query(Job).filter(Job.id == job_id).first()
+            if not job:
+                raise Exception("Job not found")
+            if title:
+                job.title = title
+            if description:
+                job.description = description
+            if employer_id:
+                job.employer_id = employer_id
+            session.commit()
+            session.refresh(job)
+            return job
